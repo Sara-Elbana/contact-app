@@ -1,6 +1,14 @@
+import 'package:contact_app/core/app_assets.dart';
+import 'package:contact_app/core/app_color.dart';
+import 'package:contact_app/models/contact.dart';
+import 'package:contact_app/screens/widget/contact_card_widget.dart';
+import 'package:contact_app/screens/widget/custom_bottom_sheet.dart';
+import 'package:contact_app/screens/widget/empty_list_widget.dart';
+//import 'package:contact_app/screens/widget/text_field.dart';
 import 'package:flutter/material.dart';
 
 class HomeScreen extends StatefulWidget {
+  static const String routeName = "homeScreen";
   const HomeScreen({super.key});
 
   @override
@@ -8,10 +16,29 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  List<Contact> contacts = List.from(Contact.contacts);
+
+  void _showBottomSheet() async {
+    Contact? newContact = await CustomBottomSheet.show(context);
+    if (newContact != null) {
+      setState(() {
+        Contact.contacts.add(newContact);
+      });
+    }
+  }
+
+  void _deleteLastContact() {
+    if (contacts.isNotEmpty) {
+      setState(() {
+        contacts.removeLast();
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xff29384D),
+      backgroundColor: AppColors.darkBlue,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(15.0),
@@ -19,205 +46,75 @@ class _HomeScreenState extends State<HomeScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Image.asset(
-                "assets/images/route-logo.png",
+                AppAssets.routeLogo,
               ),
-              Image.asset(
-                "assets/images/list-purple-Xetxuqguwn.png",
-                fit: BoxFit.cover,
-              ),
-              const Text(
-                "There is No Contacts Added Here",
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                    color: Color(0xffFFF1D4),
-                    fontSize: 20,
-                    fontWeight: FontWeight.w500),
-              ),
-              const Spacer(),
+              Contact.contacts.isEmpty
+                  ? const EmptyListWidget()
+                  : Expanded(
+                      child: GridView.builder(
+                        padding: const EdgeInsets.all(16),
+                        gridDelegate:
+                            const SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 2,
+                          mainAxisSpacing: 16,
+                          crossAxisSpacing: 16,
+                          childAspectRatio: 0.7,
+                        ),
+                        itemBuilder: (context, index) => ContactCardWdgit(
+                          onClick: (int index) {
+                            setState(() {
+                              Contact.contacts.removeAt(index);
+                            });
+                          },
+                          contact: contacts[index],
+                          index: index,
+                        ),
+                        itemCount: contacts.length,
+                      ),
+                    ),
+              // Image.asset(
+              //   "assets/images/list-purple-Xetxuqguwn.png",
+              //   fit: BoxFit.cover,
+              // ),
+
+              //const Spacer(),
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  FloatingActionButton(
-                    backgroundColor: const Color(0xffFFF1D4),
-                    onPressed: () {
-                      _showModalButtomSheet();
-                    },
-                    child: const Icon(
-                      Icons.add,
-                      color: Color(0xff29384D),
-                    ),
+                  Column(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      Visibility(
+                        visible: contacts.isNotEmpty,
+                        child: FloatingActionButton(
+                          backgroundColor: AppColors.red,
+                          onPressed: _deleteLastContact,
+                          child: const Icon(
+                            Icons.delete,
+                            color: AppColors.white2,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(
+                        height: 10,
+                      ),
+                      Visibility(
+                        visible: Contact.contacts.length <= 4,
+                        child: FloatingActionButton(
+                          backgroundColor: AppColors.white1,
+                          onPressed: _showBottomSheet,
+                          child: const Icon(
+                            Icons.add,
+                            color: AppColors.darkBlue,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
             ],
           ),
-        ),
-      ),
-    );
-  }
-
-  void _showModalButtomSheet() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: const Color(0xff29384D),
-      builder: (context) => Padding(
-        padding: const EdgeInsets.all(15.0),
-        child: Wrap(
-          children: [
-            Row(
-              children: [
-                Container(
-                  
-                ),
-              ],
-            ),
-            Padding(
-              padding: const EdgeInsets.all(5.0),
-              child: TextFormField(
-                decoration: InputDecoration(
-                  hintText: "Enter User Name ",
-                  hintStyle: const TextStyle(
-                      color: Color(0xffE2F4F6),
-                      fontSize: 16,
-                      fontWeight: FontWeight.w400),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(15),
-                    borderSide: const BorderSide(
-                      color: Color(0xff29384D),
-                    ),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(15),
-                    borderSide: const BorderSide(
-                      color: Color(0xff29384D),
-                    ),
-                  ),
-                  disabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(15),
-                    borderSide: const BorderSide(
-                      color: Color(0xff29384D),
-                    ),
-                  ),
-                  errorBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(15),
-                    borderSide: const BorderSide(
-                      color: Colors.red,
-                    ),
-                  ),
-                  focusedErrorBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(15),
-                    borderSide: const BorderSide(
-                      color: Colors.red,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(5.0),
-              child: TextFormField(
-                decoration: InputDecoration(
-                  hintText: "Enter User Email",
-                  hintStyle: const TextStyle(
-                      color: Color(0xffE2F4F6),
-                      fontSize: 16,
-                      fontWeight: FontWeight.w400),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(15),
-                    borderSide: const BorderSide(
-                      color: Color(0xff29384D),
-                    ),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(15),
-                    borderSide: const BorderSide(
-                      color: Color(0xff29384D),
-                    ),
-                  ),
-                  disabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(15),
-                    borderSide: const BorderSide(
-                      color: Color(0xff29384D),
-                    ),
-                  ),
-                  errorBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(15),
-                    borderSide: const BorderSide(
-                      color: Colors.red,
-                    ),
-                  ),
-                  focusedErrorBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(15),
-                    borderSide: const BorderSide(
-                      color: Colors.red,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(5.0),
-              child: TextFormField(
-                decoration: InputDecoration(
-                  hintText: "Enter User Phone",
-                  hintStyle: const TextStyle(
-                      color: Color(0xffE2F4F6),
-                      fontSize: 16,
-                      fontWeight: FontWeight.w400),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(15),
-                    borderSide: const BorderSide(
-                      color: Color(0xff29384D),
-                    ),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(15),
-                    borderSide: const BorderSide(
-                      color: Color(0xff29384D),
-                    ),
-                  ),
-                  disabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(15),
-                    borderSide: const BorderSide(
-                      color: Color(0xff29384D),
-                    ),
-                  ),
-                  errorBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(15),
-                    borderSide: const BorderSide(
-                      color: Colors.red,
-                    ),
-                  ),
-                  focusedErrorBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(15),
-                    borderSide: const BorderSide(
-                      color: Colors.red,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-            FilledButton(
-                onPressed: () {},
-                style: FilledButton.styleFrom(
-                  backgroundColor: const Color(0xffFFF1D4),
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16)),
-                ),
-                child: const Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      "Enter user",
-                      style: TextStyle(
-                        color: Color(0xff29384D),
-                        fontSize: 20,
-                        fontWeight: FontWeight.w400,
-                      ),
-                    ),
-                  ],
-                ))
-          ],
         ),
       ),
     );
